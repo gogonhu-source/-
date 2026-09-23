@@ -56,7 +56,60 @@ for ticker, config in CORE_STOCKS.items():
         buy_p = round(p * config["buy_factor"], 1)
         sell_p = round(p * config["sell_factor"], 1)
 
-        color_str = "#EF4444" if chg > 0 else "#22C55E"
-        sign_str = "+" if chg > 0 else ""
+        code = ticker.replace(".TW", "")
+        stock_title = f"[核心] {code} {config['name']}"
+        stock_price = f"{p} 元 ({'+' if chg > 0 else ''}{chg}%)"
+        stock_sugg = (
+            f"💡 買入安全區: {buy_p} 元以下 | 賣出獲利區: {sell_p} 元以上"
+        )
 
-        card_html = f"""
+        with st.container(border=True):
+            st.markdown(f"**{stock_title}**")
+            st.metric(label="當前股價", value=stock_price)
+            st.caption(stock_sugg)
+    except Exception:
+        pass
+
+# 3. 動態熱門股票卡片
+st.subheader("🔥 最新市場焦點熱門股")
+HOT_CANDIDATES = {
+    "2317.TW": "鴻海",
+    "2382.TW": "廣達",
+    "3231.TW": "緯創",
+    "1519.TW": "華城",
+    "2603.TW": "長榮",
+}
+
+hot_list = []
+for ticker, name in HOT_CANDIDATES.items():
+    try:
+        hist = yf.Ticker(ticker).history(period="2d")["Close"]
+        p = hist.iloc[-1]
+        prev = hist.iloc[-2]
+        chg = ((p - prev) / prev) * 100
+        hot_list.append({
+            "code": ticker.replace(".TW", ""),
+            "name": name,
+            "price": round(p, 1),
+            "change": round(chg, 2),
+            "abs_chg": abs(chg),
+        })
+    except Exception:
+        pass
+
+hot_list.sort(key=lambda x: x["abs_chg"], reverse=True)
+
+for s in hot_list[:2]:
+    buy_p = round(s["price"] * 0.90, 1)
+    sell_p = round(s["price"] * 1.15, 1)
+
+    hot_title = f"[熱門] {s['code']} {s['name']}"
+    hot_price = f"{s['price']} 元 ({'+' if s['change'] > 0 else ''}{s['change']}%)"
+    hot_sugg = (
+        f"💡 買入安全區: {buy_p} 元以下 | 賣出獲利區: {sell_p} 元以上"
+    )
+
+    with st.container(border=True):
+        st.markdown(f"**{hot_title}**")
+        st.metric(label="當前股價", value=hot_price)
+        st.caption(hot_sugg)
