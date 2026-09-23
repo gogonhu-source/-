@@ -3,7 +3,7 @@ import pandas as pd
 import streamlit as st
 import yfinance as yf
 
-# 設定網頁標題與排版
+# 設定網頁頁面
 st.set_page_config(
     page_title="台股與國際資產儀表板", page_icon="📈", layout="centered"
 )
@@ -13,7 +13,6 @@ st.caption(
     f"最後更新時間：{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
 )
 
-# 重新整理按鈕
 if st.button("🔄 刷新最新市場數據"):
     st.rerun()
 
@@ -26,7 +25,7 @@ try:
     usdtwd = usdtwd_hist.iloc[-1]
     usdtwd_chg = ((usdtwd - usdtwd_hist.iloc[-2]) / usdtwd_hist.iloc[-2]) * 100
     col1.metric("💵 美元 / 台幣", f"{round(usdtwd, 2)} 元", f"{round(usdtwd_chg, 2)}%")
-except:
+except Exception:
     col1.metric("💵 美元 / 台幣", "無法取得")
 
 try:
@@ -36,7 +35,7 @@ try:
     col2.metric(
         "🪙 國際黃金 (台幣/g)", f"{gold_twd_g} 元", f"建議: {buy_gold}元下"
     )
-except:
+except Exception:
     col2.metric("🪙 國際黃金", "無法取得")
 
 # 2. 核心股票卡片
@@ -51,14 +50,13 @@ CORE_STOCKS = {
 for ticker, config in CORE_STOCKS.items():
     try:
         hist = yf.Ticker(ticker).history(period="2d")["Close"]
-        p, prev = round(hist.iloc[-1], 1), hist.iloc[-2]
+        p = round(hist.iloc[-1], 1)
+        prev = hist.iloc[-2]
         chg = round(((p - prev) / prev) * 100, 2)
-        buy_p, sell_p = round(p * config["buy_factor"], 1), round(
-            p * config["sell_factor"], 1
-        )
+        buy_p = round(p * config["buy_factor"], 1)
+        sell_p = round(p * config["sell_factor"], 1)
 
-        st.markdown(f"""
-""", unsafe_allow_html=True)
-except:
-    pass
-https://gemini.google.com/app/dd41c72ad7935c65?utm_source=app_launcher&utm_medium=owned&utm_campaign=base_all#:~:text=sell_p%7D%20%E5%85%83%E4%BB%A5%E4%B8%8A-,%22%22%22%2C%20unsafe_allow_html%3DTrue),-%E5%AE%8C%E6%88%90%E9%80%99%E5%85%A9%E5%80%8B
+        color_str = "#EF4444" if chg > 0 else "#22C55E"
+        sign_str = "+" if chg > 0 else ""
+
+        card_html = f"""
